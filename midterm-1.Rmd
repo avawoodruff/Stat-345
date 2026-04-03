@@ -3,9 +3,9 @@ title: "STAT 345 Midterm Project"
 font: 12pt
 date: "April 3, 2026"
 output:
+  html_document: default
   pdf_document: default
   word_document: default
-  html_document: default
 ---
 
 > "Our offense is like the Pythagorean Theorem. There is no answer!", *Shaquille O'Neal*
@@ -20,7 +20,7 @@ Your data for the midterm project may come from a variety of sources, including 
 -   `hoopR`
 -   `AdvancedBasketballStats`
 
-```{r}
+```{r, echo=FALSE}
 library(ggplot2)
 library(hoopR)
 library(gganimate)
@@ -29,7 +29,8 @@ library(gifski)
 library(tidyverse)
 ```
 
-```{r}
+```{r, echo=FALSE}
+
 data <- load_nba_pbp(seasons = 2016:2026)
 wolves_shots<- data %>% filter(team_id == "16")
 ```
@@ -52,8 +53,8 @@ Note: if you would prefer to analyze college basketball, packages exist for that
 #for getting no code to show, if errors show then do warnings= FALSE
 ```
 
-```{r, eval=FALSE}
-data26 <- data26 %>% mutate(made = ifelse(scoring_play, "Made", "Missed"))
+```{r, echo=FALSE, warning=FALSE}
+data26 <- wolves_shots %>% mutate(made = ifelse(scoring_play, "Made", "Missed"))
 draw_court <- ggplot(data=data.frame(x=1,y=1),aes(x,y))+
 # got the court from https://gist.github.com/edkupfer/6354404
 geom_path(data=data.frame(x=c(-25,-25,25,25,-25),y=c(0,47,47,0,0)))+
@@ -168,97 +169,97 @@ draw_court
     -   Your code should be clean, organized, and reproducible. Remove unnecessary/scratch/exploratory code.
     -   Your code should be well commented. In particular, any decisions or judgement calls made in the analysis process should be explained/justified. Sections of code should be identified even if not functionalized (including purpose, data/argument inputs, analysis outputs).
 
-    ```{r, echo=TRUE}
-    #load in libraries 
-    library(ggplot2)
-    library(hoopR)
-    library(gganimate)
-    library(dplyr)
-    library(gifski)
-    library(tidyverse)
-    #load in the data for all seasons we are looking for
-    data <- load_nba_pbp(seasons = 2016:2026)
-    #Filter for the Minnesota Timberwolves (team_id = 16)
-    wolves_shots<- data %>% filter(team_id == "16")
-    #Creates a 'made' column to label made vs missed shots
-    data26 <- data26 %>% mutate(made = ifelse(scoring_play, "Made", "Missed"))
-    # got the court from https://gist.github.com/edkupfer/6354404
-    draw_court <- ggplot(data=data.frame(x=1,y=1),aes(x,y))+
-      #Court boundary rectangle
-    geom_path(data=data.frame(x=c(-25,-25,25,25,-25),y=c(0,47,47,0,0)))+
-    #top of free point arcs
-    geom_path(data=data.frame(
-      x=c(-6000:(-1)/1000,1:6000/1000),
-      y=c(19+sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))
-    ),aes(x=x,y=y))+
-    #free throw arcs
-    geom_path(data=data.frame(
-      x=c(-6000:(-1)/1000,1:6000/1000),
-      y=c(19-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2)
-    ),linetype='dashed'),aes(x=x,y=y))+
-    #paint rectangle (outer and inner)
-    geom_path(data=data.frame(x=c(-8,-8,8,8,-8),y=c(0,19,19,0,0)))+
-    geom_path(data=data.frame(x=c(-6,-6,6,6,-6),y=c(0,19,19,0,0)))+
-    #Free throw circle (top arc)
-    geom_path(data=data.frame(
-      x=c(-4000:(-1)/1000,1:4000/1000),
-      y=c(5.25+sqrt(4^2-c(-4000:(-1)/1000,1:4000/1000)^2)
-    )),aes(x=x,y=y))+
-    #Three-point line arc (baseline to arc)
-    geom_path(data=data.frame(
-      x=c(-6000:(-1)/1000,1:6000/1000),
-      y=c(47-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2)
-    )),aes(x=x,y=y))+
-    #Smaller inner circle around basket (rim area)
-    geom_path(data=data.frame(
-      x=c(-750:(-1)/1000,1:750/1000,750:1/1000,-1:-750/1000),
-      y=c(
-        c(5.25+sqrt(0.75^2-c(-750:(-1)/1000,1:750/1000)^2)),
-        c(5.25-sqrt(0.75^2-c(750:1/1000,-1:-750/1000)^2))
-      )
-    ),aes(x=x,y=y))+
-    #Backboard line
-    geom_path(data=data.frame(x=c(-3,3),y=c(4,4)),lineend='butt')+
-    #Restricted area/three-point extended line
-    geom_path(data=data.frame(
-      x=c(-22,-22,-22000:(-1)/1000,1:22000/1000,22,22),
-      y=c(
-        0,169/12,
-        5.25+sqrt(23.75^2-c(-22000:(-1)/1000,1:22000/1000)^2),
-        169/12,0
-      )
-    ),aes(x=x,y=y))+
-    #Set fixed ratio to prevent distortion
-    coord_fixed(xlim = c(-25, 25), ylim = c(0, 47)) +
-    #Plotting the shot attempts using jitter for better visiblity, color and shapre represent made/missed shots. Width, alpha, height and size controls the appearence of the points
-    geom_jitter(
-      data = data26,
-      aes(
-        x = coordinate_y,
-        y = 47 - coordinate_x,
-        color = made,
-        shape = made
-      ),
-      width = 0.5,
-      height = 0.5,
-      alpha = 0.3,
-      size = 1.5
-    ) +
-    #Maunal color scale to match made and missed labels  as well as team colors
-    scale_color_manual(
-      values = c("Made" = "#236192", "Missed" = "#78BE20")) +
-      #Animates the charts by season for visualization over the years
-    transition_states(season, transition_length = 5, state_length = 75)+
-    #Chart labels
-    labs(
-      title = "Minnesota Timberwolves Shot Chart {closest_state}",
-      subtitle = "Shot locations with Makes vs. Misses",
-      color = "Shot Result",
-      shape = "Shot Result"
-    )
-    #Shows the chart just made
-    draw_court
-    ```
+```{r, echo=TRUE, warning=FALSE}
+#load in libraries 
+library(ggplot2)
+library(hoopR)
+library(gganimate)
+library(dplyr)
+library(gifski)
+library(tidyverse)
+#load in the data for all seasons we are looking for
+data <- load_nba_pbp(seasons = 2016:2026)
+#Filter for the Minnesota Timberwolves (team_id = 16)
+wolves_shots<- data %>% filter(team_id == "16")
+#Creates a 'made' column to label made vs missed shots
+data26 <- wolves_shots %>% mutate(made = ifelse(scoring_play, "Made", "Missed"))
+# got the court from https://gist.github.com/edkupfer/6354404
+draw_court <- ggplot(data=data.frame(x=1,y=1),aes(x,y))+
+  #Court boundary rectangle
+geom_path(data=data.frame(x=c(-25,-25,25,25,-25),y=c(0,47,47,0,0)))+
+#top of free point arcs
+geom_path(data=data.frame(
+  x=c(-6000:(-1)/1000,1:6000/1000),
+  y=c(19+sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2))
+),aes(x=x,y=y))+
+#free throw arcs
+geom_path(data=data.frame(
+  x=c(-6000:(-1)/1000,1:6000/1000),
+  y=c(19-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2)
+),linetype='dashed'),aes(x=x,y=y))+
+#paint rectangle (outer and inner)
+geom_path(data=data.frame(x=c(-8,-8,8,8,-8),y=c(0,19,19,0,0)))+
+geom_path(data=data.frame(x=c(-6,-6,6,6,-6),y=c(0,19,19,0,0)))+
+#Free throw circle (top arc)
+geom_path(data=data.frame(
+  x=c(-4000:(-1)/1000,1:4000/1000),
+  y=c(5.25+sqrt(4^2-c(-4000:(-1)/1000,1:4000/1000)^2)
+)),aes(x=x,y=y))+
+#Three-point line arc (baseline to arc)
+geom_path(data=data.frame(
+  x=c(-6000:(-1)/1000,1:6000/1000),
+  y=c(47-sqrt(6^2-c(-6000:(-1)/1000,1:6000/1000)^2)
+)),aes(x=x,y=y))+
+#Smaller inner circle around basket (rim area)
+geom_path(data=data.frame(
+  x=c(-750:(-1)/1000,1:750/1000,750:1/1000,-1:-750/1000),
+  y=c(
+    c(5.25+sqrt(0.75^2-c(-750:(-1)/1000,1:750/1000)^2)),
+    c(5.25-sqrt(0.75^2-c(750:1/1000,-1:-750/1000)^2))
+  )
+),aes(x=x,y=y))+
+#Backboard line
+geom_path(data=data.frame(x=c(-3,3),y=c(4,4)),lineend='butt')+
+#Restricted area/three-point extended line
+geom_path(data=data.frame(
+  x=c(-22,-22,-22000:(-1)/1000,1:22000/1000,22,22),
+  y=c(
+    0,169/12,
+    5.25+sqrt(23.75^2-c(-22000:(-1)/1000,1:22000/1000)^2),
+    169/12,0
+  )
+),aes(x=x,y=y))+
+#Set fixed ratio to prevent distortion
+coord_fixed(xlim = c(-25, 25), ylim = c(0, 47)) +
+#Plotting the shot attempts using jitter for better visiblity, color and shapre represent made/missed shots. Width, alpha, height and size controls the appearence of the points
+geom_jitter(
+  data = data26,
+  aes(
+    x = coordinate_y,
+    y = 47 - coordinate_x,
+    color = made,
+    shape = made
+  ),
+  width = 0.5,
+  height = 0.5,
+  alpha = 0.3,
+  size = 1.5
+) +
+#Maunal color scale to match made and missed labels  as well as team colors
+scale_color_manual(
+  values = c("Made" = "#236192", "Missed" = "#78BE20")) +
+  #Animates the charts by season for visualization over the years
+transition_states(season, transition_length = 5, state_length = 75)+
+#Chart labels
+labs(
+  title = "Minnesota Timberwolves Shot Chart {closest_state}",
+  subtitle = "Shot locations with Makes vs. Misses",
+  color = "Shot Result",
+  shape = "Shot Result"
+)
+#Shows the chart just made
+draw_court
+```
 
 4.  (10 points) Above and Beyond. Choose either option below. You are welcome to explore both, but only one is required.
 
